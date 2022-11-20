@@ -90,10 +90,11 @@ public class TradeServiceImpl implements TradeService {
     }
 
     @Override
-    public <T extends GetDealDataResponse> List<DealVo> getTradeDealList(List<T> data) {
+    public List<DealVo> getTradeDealList(List<? extends GetDealDataResponse> data) {
         if (data.isEmpty()) {
             return Collections.emptyList();
         }
+
         return data.stream().map(v -> {
             DealVo dealVo = new DealVo();
             dealVo.setTradeCode(v.getCjbh());
@@ -103,15 +104,28 @@ public class TradeServiceImpl implements TradeService {
             dealVo.setVolume(v.getCjsl());
             dealVo.setEntrustCode(v.getWtbh());
             dealVo.setStockCode(v.getZqdm());
+
             StockInfo stockInfo = stockService.getStockByFullCode(StockUtil.getFullCode(v.getZqdm()));
             dealVo.setStockName(v.getZqmc());
             dealVo.setAbbreviation(stockInfo.getAbbreviation());
+
             if (v instanceof CrGetDealDataResponse) {
                 CrGetDealDataResponse crV = (CrGetDealDataResponse) v;
                 dealVo.setCrTradeType(crV.getXyjylx());
                 dealVo.setTradeType(crV.getMmsm());
                 dealVo.setEntrustCode(crV.getWtxh());
             }
+
+            if (v instanceof GetHisDealDataResponse) {
+                GetHisDealDataResponse crV = (GetHisDealDataResponse) v;
+                dealVo.setTradeDate(crV.getFormatDealDate());
+            }
+            
+            if (v instanceof CrGetHisDealDataResponse) {
+                CrGetHisDealDataResponse crV = (CrGetHisDealDataResponse) v;
+                dealVo.setTradeDate(crV.getFormatDealDate());
+            }
+
             return dealVo;
         }).collect(Collectors.toList());
     }
@@ -121,10 +135,11 @@ public class TradeServiceImpl implements TradeService {
         return stockList.stream().map(v -> {
             StockVo stockVo = getStockVo(v.getZqdm(), null);
             stockVo.setName(v.getZqmc());
-            stockVo.setAvailableVolume(Integer.parseInt(v.getKysl()));
             stockVo.setTotalVolume(Integer.parseInt(v.getZqsl()));
             stockVo.setPrice(new BigDecimal(v.getZxjg()));
             stockVo.setCostPrice(new BigDecimal(v.getCbjg()));
+
+            stockVo.setAvailableVolume(Integer.parseInt(v.getKysl()));
             stockVo.setProfit(new BigDecimal(v.getLjyk()));
             return stockVo;
         }).collect(Collectors.toList());
@@ -189,7 +204,7 @@ public class TradeServiceImpl implements TradeService {
     }
 
     @Override
-    public <T extends GetOrdersDataResponse> List<OrderVo> getTradeOrderList(List<T> orderList) {
+    public List<OrderVo> getTradeOrderList(List<? extends GetOrdersDataResponse> orderList) {
         List<OrderVo> list = orderList.stream().map(v -> {
             StockInfo stockInfo = stockService.getStockByFullCode(StockUtil.getFullCode(v.getZqdm()));
             OrderVo orderVo = new OrderVo();
@@ -210,37 +225,6 @@ public class TradeServiceImpl implements TradeService {
             return orderVo;
         }).collect(Collectors.toList());
         return list;
-    }
-
-    @Override
-    public <T extends GetHisDealDataResponse> List<DealVo> getTradeHisDealList(List<T> data) {
-        if (data.isEmpty()) {
-            return Collections.emptyList();
-        }
-        return data.stream().map(v -> {
-            DealVo dealVo = new DealVo();
-            dealVo.setTradeCode(v.getCjbh());
-            dealVo.setPrice(v.getCjjg());
-            dealVo.setTradeDate(new StringBuilder(v.getCjrq()).insert(6, '-').insert(4, '-').toString());
-            if (v.getCjsj().length() == 6) {
-                dealVo.setTradeTime(new StringBuilder(v.getCjsj()).insert(4, ':').insert(2, ':').toString());
-            } else {
-                dealVo.setTradeTime("00:00:00");
-            }
-            dealVo.setTradeType(v.getMmlb());
-            dealVo.setVolume(v.getCjsl());
-            dealVo.setEntrustCode(v.getWtbh());
-            dealVo.setStockCode(v.getZqdm());
-            StockInfo stockInfo = stockService.getStockByFullCode(StockUtil.getFullCode(v.getZqdm()));
-            dealVo.setStockName(v.getZqmc());
-            dealVo.setAbbreviation(stockInfo.getAbbreviation());
-            if (v instanceof CrGetHisDealDataResponse) {
-                CrGetHisDealDataResponse crV = (CrGetHisDealDataResponse) v;
-                dealVo.setCrTradeType(crV.getXyjylx());
-                dealVo.setTradeType(crV.getMmsm());
-            }
-            return dealVo;
-        }).collect(Collectors.toList());
     }
 
     @Override
@@ -273,8 +257,8 @@ public class TradeServiceImpl implements TradeService {
     }
 
     @Override
-    public List<TradeOrder> getLastTradeOrderListByRuleId(int ruleId) {
-        return tradeOrderDao.getLastListByRuleId(ruleId);
+    public List<TradeOrder> getLastTradeOrderListByRuleId(int ruleId, int userId) {
+        return tradeOrderDao.getLastListByRuleId(ruleId, userId);
     }
 
     @Override

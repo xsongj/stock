@@ -1,24 +1,22 @@
 package vip.linhs.stock.api.response;
 
-public class CrGetHisDealDataResponse extends GetHisDealDataResponse {
+public class CrGetHisDealDataResponse extends CrGetDealDataResponse {
 
-    private String Mmsm;
-    private String Xyjylx;
+    /**
+     * 成交日期
+     */
+    private String Cjrq;
 
-    public String getMmsm() {
-        return Mmsm;
+    public String getCjrq() {
+        return Cjrq;
     }
 
-    public void setMmsm(String mmsm) {
-        Mmsm = mmsm;
+    public void setCjrq(String cjrq) {
+        Cjrq = cjrq;
     }
 
-    public String getXyjylx() {
-        return Xyjylx;
-    }
-
-    public void setXyjylx(String xyjylx) {
-        Xyjylx = xyjylx;
+    public String getFormatDealDate() {
+        return getFormatDealDate(Cjrq);
     }
 
 }
