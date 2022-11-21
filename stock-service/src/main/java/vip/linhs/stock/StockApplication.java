@@ -20,6 +20,7 @@ public class StockApplication {
         ConfigurableApplicationContext context = SpringApplication.run(StockApplication.class, args);
         Environment environment = context.getBean(Environment.class);
         StockApplication.logger.info("http://127.0.0.1:{}", environment.getProperty("server.port"));
+        System.out.println("update by jxs");
     }
 
 }
